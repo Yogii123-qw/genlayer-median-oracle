@@ -58,6 +58,21 @@ The tests use genlayer-test in Direct Mode with mocked web responses. Install ge
 
 The test file swaps only the contract header to a locally available SDK pin. The shipped contract itself targets Studio-next, and that header stays untouched. `gl.vm.run_nondet_unsafe` and `gl.nondet.web.get` are both present in the local bundle, so the custom validator path runs locally too: the leader runs through mocked web calls, and the captured validator is re-run with changed mocks to prove it accepts a move inside the 0.5 percent band and rejects a move outside it.
 
+## Verification & Test Results
+
+Local tests run in genlayer-test Direct Mode with mocked web responses. The suite has 19 cases and all 19 pass. Coverage: source registration and owner-only guards, fetch with three agreeing sources, weighted median, one outlier dropped, one dead source dropped, bad format dropped, unparseable body dropped, revert when fewer than two healthy sources or fewer than two sources agree, the validator band (accepts a 0.2 percent move, rejects a 2 percent move, rejects a lying leader), freshness with a warped clock, source removal, JSON path pinning, and price parsing across CoinGecko, Binance, and CoinDesk shapes.
+
+Price parsing uses integer arithmetic only. No binary fraction enters the consensus path: JSON fractions are kept as text and parsed into integers scaled by 10 to the power of 8.
+
+## Live Deployment Proof (GenLayer Studio)
+
+Network: TBD (GenLayer Studio)
+Contract Address: TBD
+Deployment Transaction Hash: TBD
+Consensus Execution Proof: TBD (FINALIZED transaction hash)
+
+No live deployment exists yet. These slots are filled in after the Studio deploy and a FINALIZED write transaction are verified on the Explorer.
+
 ## Deploy it on Studio
 
 Open Studio, create a new Intelligent Contract, paste contracts/median_oracle.py, and deploy with the asset label as the constructor argument, for example `BTC/USD`. The deployer becomes the owner. Then call `add_source` for each price URL, call `fetch_price`, and read the result with `get_price`. Deploy is not done yet; it needs a browser session, and this repo does not submit anything on its own.

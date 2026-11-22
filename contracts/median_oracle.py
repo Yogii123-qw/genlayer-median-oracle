@@ -44,31 +44,81 @@ def _now_unix() -> int:
     return int(datetime.now(timezone.utc).timestamp())
 
 
-def _scale_price(price):
-    if price is None:
+def _parse_decimal(text):
+    # Parse a decimal string into an integer scaled by SCALE, using only
+    # integer arithmetic. Returns None when the text is not a plain number.
+    # Accepts an optional sign, an optional fraction, and an optional
+    # exponent, for example "100.25", "-3.5", ".5", "1e2". The result is
+    # rounded half up on the last kept digit, matching the old scaling.
+    if text is None:
         return None
-    if price != price:
+    s = text.strip()
+    if len(s) == 0:
         return None
-    if price in (float("inf"), float("-inf")):
+    neg = False
+    if s[0] == "-":
+        neg = True
+        s = s[1:]
+    elif s[0] == "+":
+        s = s[1:]
+    if len(s) == 0:
         return None
-    if price <= 0 or price >= 1000000000:
+    exp = 0
+    if "e" in s or "E" in s:
+        parts = s.replace("E", "e").split("e")
+        if len(parts) != 2:
+            return None
+        s = parts[0]
+        try:
+            exp = int(parts[1])
+        except ValueError:
+            return None
+        if exp > 30 or exp < -30:
+            return None
+    if "." in s:
+        whole, frac = s.split(".", 1)
+    else:
+        whole, frac = s, ""
+    if len(whole) == 0 and len(frac) == 0:
         return None
-    scaled = int(price * SCALE + 0.5)
-    if scaled <= 0:
+    if len(whole) + len(frac) > 18:
+        return None
+    if len(whole) > 0 and not whole.isdigit():
+        return None
+    if len(frac) > 0 and not frac.isdigit():
+        return None
+    if len(whole) == 0:
+        whole = "0"
+    try:
+        digits = int(whole + frac)
+    except ValueError:
+        return None
+    shift = SCALE_DECIMALS + exp - len(frac)
+    if shift >= 0:
+        scaled = digits * (10 ** shift)
+    else:
+        divisor = 10 ** (-shift)
+        scaled = (digits + divisor // 2) // divisor
+    if neg:
+        scaled = -scaled
+    if scaled <= 0 or scaled >= 1000000000 * SCALE:
         return None
     return scaled
 
 
 def _as_number(value):
+    # Return the price as a scaled integer, or None when the value is not
+    # a usable number. JSON numbers arrive here as int, or as str when
+    # they carry a fraction, because the parser keeps fractions as text.
+    # Anything else, including a boolean, is rejected.
     if isinstance(value, bool):
         return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value.strip())
-        except ValueError:
+    if isinstance(value, int):
+        if value <= 0 or value >= 1000000000:
             return None
+        return value * SCALE
+    if isinstance(value, str):
+        return _parse_decimal(value.strip().replace(",", ""))
     return None
 
 
@@ -96,7 +146,10 @@ def _extract_price(body, json_path):
         return None
     data = None
     try:
-        data = json.loads(text)
+        # parse_float=str keeps every JSON fraction as text, so no binary
+        # fraction ever enters the consensus path. _as_number parses that
+        # text with integer arithmetic only.
+        data = json.loads(text, parse_float=str)
     except Exception:
         data = None
     if data is not None and json_path:
@@ -108,7 +161,7 @@ def _extract_price(body, json_path):
                 node = node[int(part)]
             else:
                 return None
-        return _scale_price(_as_number(node))
+        return _as_number(node)
     if data is not None:
         found = []
         _walk_numbers(data, "", found)
@@ -117,15 +170,12 @@ def _extract_price(body, json_path):
         for want in _PRICE_KEYS:
             for key, number in found:
                 if key == want:
-                    return _scale_price(number)
-        return _scale_price(found[0][1])
+                    return number
+        return found[0][1]
     match = re.search(r"-?\d[\d,]*(\.\d+)?", text)
     if match is None:
         return None
-    try:
-        return _scale_price(float(match.group(0).replace(",", "")))
-    except ValueError:
-        return None
+    return _parse_decimal(match.group(0).replace(",", ""))
 
 
 def _fetch_one(url, json_path):
