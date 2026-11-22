@@ -57,7 +57,7 @@
 ## Alamat / hash
 - Studio deploy: belum ada (menunggu browser task)
 - Repo GitHub: https://github.com/Yogii123-qw/genlayer-median-oracle
-- Commit: ad5075a (main, terverifikasi di remote)
+- Commit: 46d26fd (main, terverifikasi di remote)
 
 ## Patch determinisme 22 Nov 2026
 - float() dihapus dari kontrak: _scale_price dan _as_number lama diganti _parse_decimal dan _as_number baru, semua aritmatika integer skala 10**8. JSON fractions dibaca sebagai teks lewat json.loads(parse_float=str). grep float( di contracts/median_oracle.py = 0.
