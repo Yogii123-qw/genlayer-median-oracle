@@ -36,13 +36,13 @@ The validator re-runs the whole fetch itself and accepts the leader median only 
 
 ## Suggested sources for BTC/USD
 
-These three public endpoints all parse with the built-in auto-detect, no JSON path needed.
+The live deployment registers two sources, each with a pinned JSON path.
 
-CoinGecko: `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`
+CoinGecko: `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`, path `bitcoin.usd`
 
-Binance: `https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT`
+Coinbase: `https://api.coinbase.com/v2/prices/BTC-USD/spot`, path `data.amount`
 
-CoinDesk: `https://api.coindesk.com/v1/bpi/currentprice.json`
+Binance was tried and dropped: the Studio network could not reach it from the deployment region. CoinDesk parses with the built-in auto-detect and is covered by the local tests; it is not registered on the live deployment.
 
 Any other asset works the same way as long as each source answers with a JSON body that holds one clear price number. When a source changes its format, `set_source_path` pins the new path without a redeploy.
 
@@ -66,20 +66,26 @@ Price parsing uses integer arithmetic only. No binary fraction enters the consen
 
 ## Live Deployment Proof (GenLayer Studio)
 
-Network: TBD (GenLayer Studio)
-Contract Address: TBD
-Deployment Transaction Hash: TBD
-Consensus Execution Proof: TBD (FINALIZED transaction hash)
+Network: GenLayer StudioNet (chain id 61999)
+Contract Address: 0x91C4a6197905e03966c63B82f072f1706f8D8188
+Deployment Transaction Hash: 0xc283b33ced6d2a00da4bd2734b891688f9046a44a5694c09031cb10119b535b0
+Consensus Execution Proof: fetch_price, transaction 0xa037c7494b9efab88e538a62c9bd8641f7a5f9e5cd14c1839c121b5fa69c3785, FINALIZED, reached consensus, no USER_ERROR
 
-No live deployment exists yet. These slots are filled in after the Studio deploy and a FINALIZED write transaction are verified on the Explorer.
+Registered sources: CoinGecko, transaction 0x1deeae98faa68b8336ee7e8cc577e9739aa836ea923c1aa2cc54a2c057810f59, with JSON path "bitcoin.usd" set by transaction 0x239342c6dd0cda5d6ccfee325fc0db4f277a8ae1c8da1c8050eeb864c86807d6; Coinbase, transaction 0x7c383d3cecbadda4c1faf9bab17d1852940951ebe39656b86a4bbdba53dc26bd, with JSON path "data.amount" set by transaction 0x86c50aba448897d117b90528487bb29796b19415640355fc33fb18bf1f6f018f.
+
+Verified live read, 22 November 2026: get_price returns price 6067700000000 at scale 10 to the power of 8, which is 60,677.00 USD, with has_price true and sources_used 2.
+
+Contract on the Explorer: https://explorer-studio.genlayer.com/address/0x91C4a6197905e03966c63B82f072f1706f8D8188
+Deploy transaction on the Explorer: https://explorer-studio.genlayer.com/tx/0xc283b33ced6d2a00da4bd2734b891688f9046a44a5694c09031cb10119b535b0
+Fetch transaction on the Explorer: https://explorer-studio.genlayer.com/tx/0xa037c7494b9efab88e538a62c9bd8641f7a5f9e5cd14c1839c121b5fa69c3785
 
 ## Deploy it on Studio
 
-Open Studio, create a new Intelligent Contract, paste contracts/median_oracle.py, and deploy with the asset label as the constructor argument, for example `BTC/USD`. The deployer becomes the owner. Then call `add_source` for each price URL, call `fetch_price`, and read the result with `get_price`. Deploy is not done yet; it needs a browser session, and this repo does not submit anything on its own.
+Open Studio, create a new Intelligent Contract, paste contracts/median_oracle.py, and deploy with the asset label as the constructor argument, for example `BTC/USD`. The deployer becomes the owner. Then call `add_source` for each price URL, call `fetch_price`, and read the result with `get_price`. The contract is deployed; the live deployment proof above records the address and the FINALIZED fetch transaction. This repo does not submit anything on its own.
 
 ## Limits, stated plainly
 
-The Studio deploy has not been run yet, so the validator path on live Studio still needs that check. The local tests prove the logic with mocked web responses, not with real ones. The price is only as good as its sources: if two sources are wrong in the same direction, the median follows them. Free price APIs can change format or start rate limiting without notice; a source that breaks is dropped, and the fetch fails cleanly when fewer than two healthy sources are left. There is no time-weighted average, so a single fetch still reflects one moment in time. The owner is a single key with no timelock, so whoever holds that key controls the source list.
+The Studio deploy is live and one fetch reached consensus there with two sources, so the validator path is proven on live Studio for that run. The local tests still prove the logic with mocked web responses, not with real ones. The price is only as good as its sources: if two sources are wrong in the same direction, the median follows them. Free price APIs can change format or start rate limiting without notice; a source that breaks is dropped, and the fetch fails cleanly when fewer than two healthy sources are left. There is no time-weighted average, so a single fetch still reflects one moment in time. The owner is a single key with no timelock, so whoever holds that key controls the source list.
 
 ## License
 
