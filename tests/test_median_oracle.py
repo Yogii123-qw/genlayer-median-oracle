@@ -338,3 +338,46 @@ def test_price_parsing_across_formats(
     result = contract.fetch_price()
     assert result["price"] == 100 * SCALE
     assert result["sources_used"] == 3
+
+
+def test_pinned_paths_live_source_shapes(
+    direct_vm, direct_deploy, direct_alice, tmp_path
+):
+    contract = _deploy(direct_vm, direct_deploy, tmp_path, direct_alice)
+    direct_vm.sender = direct_alice
+    contract.add_source(URL_A, 1)
+    contract.add_source(URL_B, 1)
+    contract.add_source(URL_C, 1)
+    # Exact bodies served live: CoinGecko nests the price under
+    # bitcoin.usd, Coinbase under data.amount as a string, Kraken under
+    # result.XXBTZUSD.c[0] as a string. Each source gets its pinned path.
+    direct_vm.mock_web(
+        URL_A, {"status": 200, "body": '{"bitcoin": {"usd": 60795}}'}
+    )
+    direct_vm.mock_web(
+        URL_B,
+        {
+            "status": 200,
+            "body": '{"data": {"amount": "60702.755", "base": "BTC", "currency": "USD"}}',
+        },
+    )
+    direct_vm.mock_web(
+        URL_C,
+        {
+            "status": 200,
+            "body": '{"result": {"XXBTZUSD": {"c": ["60795.0", "1.0"]}}}',
+        },
+    )
+    contract.set_source_path(0, "bitcoin.usd")
+    contract.set_source_path(1, "data.amount")
+    contract.set_source_path(2, "result.XXBTZUSD.c.0")
+    sources = contract.get_sources()["sources"]
+    assert sources[0]["json_path"] == "bitcoin.usd"
+    assert sources[1]["json_path"] == "data.amount"
+    assert sources[2]["json_path"] == "result.XXBTZUSD.c.0"
+    result = contract.fetch_price()
+    # Prices are 60795, 60702.755, 60795: the median is 60795 and the
+    # low source sits 0.15 percent below it, inside the 2 percent band.
+    assert result["price"] == 60795 * SCALE
+    assert result["sources_used"] == 3
+    assert result["sources_healthy"] == 3

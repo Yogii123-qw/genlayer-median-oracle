@@ -48,7 +48,7 @@ Any other asset works the same way as long as each source answers with a JSON bo
 
 ## Files
 
-contracts/median_oracle.py holds the contract. tests/test_median_oracle.py holds the local tests, 19 cases that cover the full flow, the validator band, and every revert path.
+contracts/median_oracle.py holds the contract. tests/test_median_oracle.py holds the local tests, 20 cases that cover the full flow, the validator band, and every revert path.
 
 ## Test it locally
 
@@ -60,7 +60,7 @@ The shipped contract targets the old-style SDK pin directly, and local tests dep
 
 ## Verification & Test Results
 
-Local tests run in genlayer-test Direct Mode with mocked web responses. The suite has 19 cases and all 19 pass. Coverage: source registration and owner-only guards, fetch with three agreeing sources, weighted median, one outlier dropped, one dead source dropped, bad format dropped, unparseable body dropped, revert when fewer than two healthy sources or fewer than two sources agree, the validator band (accepts a 0.2 percent move, rejects a 2 percent move, rejects a lying leader), freshness with a warped clock, source removal, JSON path pinning, and price parsing across CoinGecko, Binance, and CoinDesk shapes.
+Local tests run in genlayer-test Direct Mode with mocked web responses. The suite has 20 cases and all 20 pass. Coverage: source registration and owner-only guards, fetch with three agreeing sources, weighted median, one outlier dropped, one dead source dropped, bad format dropped, unparseable body dropped, revert when fewer than two healthy sources or fewer than two sources agree, the validator band (accepts a 0.2 percent move, rejects a 2 percent move, rejects a lying leader), freshness with a warped clock, source removal, JSON path pinning, price parsing across CoinGecko, Binance, and CoinDesk shapes, and pinned JSON paths for the three live source shapes (CoinGecko bitcoin.usd, Coinbase data.amount, Kraken result.XXBTZUSD.c.0).
 
 Price parsing uses integer arithmetic only. No binary fraction enters the consensus path: JSON fractions are kept as text and parsed into integers scaled by 10 to the power of 8.
 
