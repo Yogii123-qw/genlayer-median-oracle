@@ -1,7 +1,7 @@
 # STATE.md - Median Oracle (GenLayer Intelligent Contract)
 
 ## Status saat ini
-- Fase: kode selesai, uji lokal LULUS 19/19, lint LULUS (3 checks), review akhir Groq selesai. Repo dibuat dan di-push. Studio deploy BELUM dilakukan (butuh browser task induk).
+- Fase: kode ditulis ulang ke gaya lama 22 Nov 2026 (header # v0.2.16, pin 1jb45aa8, gl.Contract, TreeMap telanjang) sesudah Studio menolak pin v0.4.0; uji lokal LULUS 19/19 atas file kirim yang byte-identik, tanpa swap. Repo dibuat dan di-push. Studio deploy BELUM dilakukan (butuh browser task induk).
 - JANGAN SUBMIT ke portal GenLayer tanpa persetujuan Monch.
 
 ## SOP dan skill yang dibaca utuh sebelum kerja
@@ -27,7 +27,7 @@
 
 ## Uji lokal (genlayer-test Direct Mode, 22 Nov 2026)
 - 19/19 LULUS dalam 0,86 detik. Cakupan: add_source dan validasi input, get_price sebelum fetch, tiga sumber sepakat, bobot menggeser median, satu outlier dibuang, satu sumber mati (tanpa mock), sumber status 500 dibuang, body tak terurai dibuang, kurang dari 2 sumber sehat revert, tidak ada kesepakatan revert, fetch tanpa sumber revert, validator setuju di dalam pita 0,5 persen (gerak 0,2 persen), validator menolak di luar pita (gerak 2 persen), validator menolak leader yang berbohong (median 200 saat sumber bilang 100), is_fresh dengan warp waktu (30 detik, fresh 60 ya, fresh 10 tidak), remove_source, JSON path pin, parsing tiga format nyata (CoinGecko, Binance, CoinDesk).
-- Batasan uji: kontrak diuji sebagai salinan yang byte-identik kecuali header (pin SDK 1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6, satu-satunya runner di bundle GenVM v0.3.0-rc7) dan dua penyesuaian API era lama (from genlayer import * sebagai ganti from genlayer.types import *, gl.Contract sebagai ganti gl.contract.Contract, TreeMap telanjang sebagai ganti gl.storage.TreeMap). Kontrak kirim tetap memakai header v0.4.0 dan pin kzybg95x1gn21dw72m7hyg0maaap04n4nx55j9yt6fkdqxtz6bz0. Bukti deploy Studio tetap menjadi cek otoritatif untuk pin kirim.
+- Batasan uji: kontrak diuji sebagai file kirim yang byte-identik (header # v0.2.16, pin SDK 1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6, satu-satunya runner di bundle GenVM v0.3.0-rc7), tanpa swap header dan tanpa penyesuaian API. Pin ini terbukti bisa di-deploy di Studio pada 22 Nov 2026 (kontrak minimal gaya lama, alamat 0x05534FE75D83950cFE6C5d54486d20366576Ac1D). Bukti deploy Studio atas kontrak ini tetap menjadi cek otoritatif.
 - Batasan uji tambahan: jalur kesepakatan error leader (validator menyetujui UserError [EXPECTED] yang sama) TIDAK bisa diuji di Direct Mode, karena bila leader_fn raise, harness direct tidak menangkap validatornya. Jalur itu hanya bisa dibuktikan di deploy Studio.
 
 ## Lint

@@ -1,13 +1,12 @@
-# v0.4.0
-# { "Depends": "py-genlayer:kzybg95x1gn21dw72m7hyg0maaap04n4nx55j9yt6fkdqxtz6bz0" }
+# v0.2.16
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+
+from genlayer import *
 
 import json
 import re
 import typing
 from datetime import datetime, timezone
-
-import genlayer as gl
-from genlayer.types import *
 
 
 # Price is stored scaled by 10**8, so 100.25 USD is 10025000000.
@@ -238,14 +237,14 @@ def _handle_leader_error(leaders_res, leader_fn) -> bool:
         return False
 
 
-class MedianOracle(gl.contract.Contract):
+class MedianOracle(gl.Contract):
     owner: Address
     asset: str
     source_count: u256
-    source_url: gl.storage.TreeMap[u256, str]
-    source_weight: gl.storage.TreeMap[u256, u256]
-    source_path: gl.storage.TreeMap[u256, str]
-    source_active: gl.storage.TreeMap[u256, bool]
+    source_url: TreeMap[u256, str]
+    source_weight: TreeMap[u256, u256]
+    source_path: TreeMap[u256, str]
+    source_active: TreeMap[u256, bool]
     last_price: u256
     last_updated: u256
     last_sources: u256

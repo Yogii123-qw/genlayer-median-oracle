@@ -56,7 +56,7 @@ The tests use genlayer-test in Direct Mode with mocked web responses. Install ge
 
 `pytest tests/test_median_oracle.py -q`
 
-The test file swaps only the contract header to a locally available SDK pin. The shipped contract itself targets Studio-next, and that header stays untouched. `gl.vm.run_nondet_unsafe` and `gl.nondet.web.get` are both present in the local bundle, so the custom validator path runs locally too: the leader runs through mocked web calls, and the captured validator is re-run with changed mocks to prove it accepts a move inside the 0.5 percent band and rejects a move outside it.
+The shipped contract targets the old-style SDK pin directly, and local tests deploy that exact file with no header swap, so the tested file is byte-identical to the file Studio receives. `gl.vm.run_nondet_unsafe` and `gl.nondet.web.get` are both present in the local bundle, so the custom validator path runs locally too: the leader runs through mocked web calls, and the captured validator is re-run with changed mocks to prove it accepts a move inside the 0.5 percent band and rejects a move outside it.
 
 ## Verification & Test Results
 
