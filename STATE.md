@@ -57,7 +57,7 @@
 ## Alamat / hash
 - Studio deploy: belum ada (menunggu browser task)
 - Repo GitHub: https://github.com/Yogii123-qw/genlayer-median-oracle
-- Commit: (diisi sesudah push)
+- Commit: ad5075a (main, terverifikasi di remote)
 
 ## Langkah berikutnya
 1. Serahkan ke induk untuk uji deploy Studio lewat cloud browser (akun dev Studio, bukan wallet Monch). Tempel kontrak, deploy dengan argumen konstruktor BTC/USD, panggil add_source untuk tiga URL saran di README, panggil fetch_price sampai ada transaksi ACCEPTED dan consensus tercapai. Catat alamat kontrak dan tx hash.
