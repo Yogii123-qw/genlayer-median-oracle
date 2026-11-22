@@ -59,7 +59,7 @@
 ## Alamat / hash
 - Studio deploy versi lama (20:15 WIB 22 Nov 2026): 0x79896b1fecc2500CEFF08E3fb1B7dD43eDC4aFDa, deploy tx 0x4c5a5823c069198452789efb7705159a0563b8144196262eee40ea8c5d12f12c. add_source CoinGecko dan Binance FINALIZED, fetch_price FINALIZED tapi konsensus USER_ERROR "Fewer than 2 healthy price sources" (Binance mengembalikan JSON error; CoinGecko bersarang tanpa path yang dipatok). Deploy ulang file yang sama dengan path dipatok sejak awal menunggu browser task.
 - Repo GitHub: https://github.com/Yogii123-qw/genlayer-median-oracle
-- Commit: 46d26fd (main, terverifikasi di remote)
+- Commit: f0cd880 (main, terverifikasi di remote)
 
 ## Patch determinisme 22 Nov 2026
 - float() dihapus dari kontrak: _scale_price dan _as_number lama diganti _parse_decimal dan _as_number baru, semua aritmatika integer skala 10**8. JSON fractions dibaca sebagai teks lewat json.loads(parse_float=str). grep float( di contracts/median_oracle.py = 0.
